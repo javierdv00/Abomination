@@ -6,13 +6,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
-
+#import Tables_are_fun
+from Tables_are_fun import insert_person
+#Projects/Abomination/Natalie/Tables_are_fun.py
 players_data = []
-gender = 1      # 0->male, 1->female
-page = 60
-#url = 'https://inside.fifa.com/fifa-world-ranking/men'
-#url = 'https://www.sofascore.com/football/rankings/fifa'
-#url = 'https://www.fifaindex.com/players/'
+gender = 0      # 0->male, 1->female
+page = 2
+max_page = 10
 
 # Set up Chrome options to run in headless mode
 chrome_options = Options()
@@ -23,6 +23,7 @@ chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resou
 chrome_options.add_argument("--window-size=1920,1080")  # Set a large window size
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")  # Disable automation detection
 chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")  # Set a user-agent
+count_page = 0
 while True:
     url = f'https://www.fifaindex.com/players/?page={page}&gender={gender}&order=desc' #male
     
@@ -62,13 +63,20 @@ while True:
         pot = ovr_pot[1].text
         name = row.find('td', {'data-title': 'Name'}).find('a').text
         positions = [pos.text for pos in row.find('td', {'data-title': 'Preferred Positions'}).find_all('span')]
+        pos = ''
+        for n in positions:
+            pos += n+ ' ' 
         age = row.find('td', {'data-title': 'Age'}).text
         team = row.find('td', {'data-title': 'Team'}).find('a').get('title').replace(' FIFA 24','')
-
-        players_data.append([name, player_gender,  nationality, ovr, pot, positions, age, team])
+        #print(row)
+        insert_person([name, age, team,  nationality, positions])
+        players_data.append([name, player_gender,  nationality, ovr, pot, positions, int(age), team])
     print(page,'\n',len(players_data))
     page += 1
     time.sleep(4)
+    if count_page>=max_page: break
+    count_page += 1
+    break # only to test one page, otherwise need to be remove
     
 # for player in players_data:
 #     print(player)
