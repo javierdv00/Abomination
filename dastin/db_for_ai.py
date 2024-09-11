@@ -1,5 +1,6 @@
 import psycopg2
 from psycopg2 import sql
+import traceback
 
 class conectorDatabase():
     def __init__(self) -> None:
@@ -8,11 +9,14 @@ class conectorDatabase():
     def conect_to_database(self, db_name):
         conn = psycopg2.connect(host="localhost", 
                                 dbname=db_name,
-                                user="newuser",
-                                password="postgres",
+                                user="postgres",
+                                password="password",
                                 port=5432)
         cur = conn.cursor()
         return cur, conn
+
+#psql -d user_ki -U newuser -h horst -p 5432
+
 
 class databaseModel(conectorDatabase):
     def __init__(self, db_name) -> None:
@@ -21,88 +25,84 @@ class databaseModel(conectorDatabase):
 
     def create_database(self):
         cur, conn = self.conect_to_database("postgres")
+        conn.autocommit = True
         try:
             cur.execute(sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"), [self.database_name])
             exists = cur.fetchone()
             if not exists:
                 cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(self.database_name)))
-                print(f"Datenbank '{self.database_name}' databse create sucessfull.")
-            else:
-                print(f"Datenbank '{self.database_name}' database exist.")
         except Exception as e:
-            print(f"Fail by create Database: {e}")
+            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
         finally:
             # close conection to database
+            conn.autocommit = False
             cur.close()
             conn.close()
 
     def create_table(self):
-        cur, conn = self.conect_to_database("oaica2")
+        cur, conn = self.conect_to_database(self.database_name)
         try:
-            cur.execute("""CREATE TABLE IF NOT EXISTS Articel(
+            cur.execute("""CREATE TABLE IF NOT EXISTS Article(
                     ID SERIAL PRIMARY KEY,
                     Title VARCHAR(100),
-                    txt TEXT,
+                    txt TEXT
                     )
                     """)
-            cur.execute("""CREATE TABLE IF NOT EXISTS User(
-                    ID SERIAL PRIMARY KEY
+            cur.execute("""CREATE TABLE IF NOT EXISTS User_(
+                    ID SERIAL PRIMARY KEY,
+                    name VARCHAR(20),
+                    rank INT
                     )
                     """)
-            cur.execute("""CREATE TABLE IF NOT EXISTS KI-Role(
+            cur.execute("""CREATE TABLE IF NOT EXISTS KI_Role(
                     ID SERIAL PRIMARY KEY,
                     Name VARCHAR(50),
-                    prompt VARCHAR(1000),
+                    prompt VARCHAR(1000)
                     )
                     """)
-            cur.execute("""CREATE TABLE IF NOT EXISTS USERKI-RoleChat(
+            cur.execute("""CREATE TABLE IF NOT EXISTS USERKI_RoleChat(
                     ID SERIAL PRIMARY KEY,
                     ID_User INT,
-                    ID_KI-Role INT,
-                    FOREIGN KEY (ID_User) REFERENCES User(ID),
-                    FOREIGN (ID_KI-Role) REFERENCES KI-Role(ID)
+                    ID_KI_Role INT,
+                    FOREIGN KEY (ID_User) REFERENCES User_(ID),
+                    FOREIGN KEY (ID_KI_Role) REFERENCES KI_Role(ID)
                     )
                     """)
             cur.execute("""CREATE TABLE IF NOT EXISTS USER_Message(
                     ID SERIAL PRIMARY KEY,
                     ID_User INT,
-                    ID_USERKI-RoleChat,
+                    ID_USERKI_RoleChat INT,
                     Message VARCHAR(2000),
-                    FOREIGN KEY (ID_User) REFERENCES User(ID),
-                    FOREIGN KEY (ID_USERKI-RoleChat) REFERENCES USERKI-RoleChat(ID)
+                    FOREIGN KEY (ID_User) REFERENCES User_(ID),
+                    FOREIGN KEY (ID_USERKI_RoleChat) REFERENCES USERKI_RoleChat(ID)
                     )
                     """)
             cur.execute("""CREATE TABLE IF NOT EXISTS KIROLE_Message(
                     ID SERIAL PRIMARY KEY,
-                    ID_KI-RoleChat INT,
-                    ID_USERKI-RoleChat,
+                    ID_KI_RoleChat INT,
+                    ID_USERKI_RoleChat INT,
                     Message VARCHAR(2000),
-                    FOREIGN KEY (ID_KI-RoleChat) REFERENCES  KI-Role(ID),
-                    FOREIGN KEY (ID_USERKI-RoleChat) REFERENCES USERKI-RoleChat(ID)
+                    FOREIGN KEY (ID_KI_RoleChat) REFERENCES  KI_Role(ID),
+                    FOREIGN KEY (ID_USERKI_RoleChat) REFERENCES USERKI_RoleChat(ID)
                     
                     )
                     """)
             conn.commit()
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
         finally:
             cur.close()
             conn.close()
 
-    def insert_to_Database(self, table_name, atributes, values):
+    def insert_to_Database(self, table_name, attributes, values):
         cur, conn = self.conect_to_database(self.database_name )
-        insert_query = f"INSERT INTO {table_name} ({atributes[0]}"
-        for atribute in atributes[1:]:
-            insert_query = insert_query + ", " + atribute
-        insert_query = f"{insert_query}) VALUES (" + "%s"
-        insert_query = f"{insert_query}) VALUES (" + "%s" (", %s") * (len(values)-1) + ")"
-        return_message = ""
+        insert_query = f"INSERT INTO {table_name} ({', '.join(attributes)}) VALUES ({', '.join(['%s'] * len(values))})"
         try:
             cur.execute(insert_query, values)
             conn.commit()
             return_message = "Successful"
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
             return_message = "Fail"
         finally:
             cur.close()
@@ -133,10 +133,16 @@ class databaseModel(conectorDatabase):
                 cur.execute(select_query)
             results = cur.fetchall()
         except Exception as e:
-            print("Fail:{e}")
+            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
             results = "something is wrong"
         finally:
             cur.close()
             conn.close()
             return results
-        # not yet tested
+
+        
+        
+
+
+        
+ 
