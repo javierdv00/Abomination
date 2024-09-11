@@ -2,6 +2,9 @@ import psycopg2
 from psycopg2 import sql
 import traceback
 
+
+
+
 class conectorDatabase():
     def __init__(self) -> None:
         pass
@@ -14,6 +17,59 @@ class conectorDatabase():
                                 port=5432)
         cur = conn.cursor()
         return cur, conn
+   
+    def get_information(self, tables, table_with_atributes, search_statement=None, search_value= None,  key_couples=None, order_by=None, how_order= None):
+        cur, conn = self.conect_to_database(self.database_name)
+        select_query = f"SELECT {table_with_atributes[0]}"
+        if len(table_with_atributes) > 1:
+            for atribute in table_with_atributes[1]:
+                select_query = select_query + f", {atribute}"
+        select_query = select_query + f"FROM {tables[0]}"
+        if tables > 1:
+            x = 1
+            for pk, fk in key_couples:
+                select_query = select_query + f"LEFT JOIN {tables[0]} on {tables[x]}.{pk} = {tables[0]}.{fk} \n"
+                x = x + 1
+        if search_statement:
+            select_query = select_query + f"WHERE {search_statement} =" + "%s"
+        if order_by:
+            select_query = select_query + f"ORDER BY {order_by} {how_order}"
+        results = ""
+        try:
+            if search_value:
+                cur.execute(select_query, search_value)
+            else:
+                cur.execute(select_query)
+            results = cur.fetchall()
+        except Exception as e:
+            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
+            results = "something is wrong"
+        finally:
+            cur.close()
+            conn.close()
+            return results
+    
+    def insert_to_Database(self, table_name, attributes, values):
+        cur, conn = self.conect_to_database(self.database_name )
+        # insert_query = f"INSERT INTO {table_name} ({atributes[0]}"
+        # for atribute in atributes[1:]:
+        #     insert_query = insert_query + ", " + atribute
+        # #insert_query = f"{insert_query}) VALUES (" + "%s"
+        # placeholders = ", ".join(["%s"] * len(values))
+        # insert_query = f"{insert_query}) VALUES ({placeholders})"
+        # return_message = ""
+        insert_query = f"INSERT INTO {table_name} ({', '.join(attributes)}) VALUES ({', '.join(['%s'] * len(values))})"
+        try:
+            cur.execute(insert_query, values)
+            conn.commit()
+            return_message = "Successful"
+        except Exception as e:
+            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
+            return_message = "Fail"
+        finally:
+            cur.close()
+            conn.close()
+            return return_message
 
 #psql -d user_ki -U newuser -h horst -p 5432
 
@@ -93,52 +149,8 @@ class databaseModel(conectorDatabase):
         finally:
             cur.close()
             conn.close()
-
-    def insert_to_Database(self, table_name, attributes, values):
-        cur, conn = self.conect_to_database(self.database_name )
-        insert_query = f"INSERT INTO {table_name} ({', '.join(attributes)}) VALUES ({', '.join(['%s'] * len(values))})"
-        try:
-            cur.execute(insert_query, values)
-            conn.commit()
-            return_message = "Successful"
-        except Exception as e:
-            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
-            return_message = "Fail"
-        finally:
-            cur.close()
-            conn.close()
-            return return_message
     
-    def get_information(self, tables, table_with_atributes, search_statement=None, search_value= None,  key_couples=None, order_by=None, how_order= None):
-        cur, conn = self.conect_to_database(self.database_name)
-        select_query = f"SELECT {table_with_atributes[0]}"
-        if len(table_with_atributes) > 1:
-            for atribute in table_with_atributes[1]:
-                select_query = select_query + f", {atribute}"
-        select_query = select_query + f"FROM {tables[0]}"
-        if tables > 1:
-            x = 1
-            for pk, fk in key_couples:
-                select_query = select_query + f"LEFT JOIN {tables[0]} on {tables[x]}.{pk} = {tables[0]}.{fk} \n"
-                x = x + 1
-        if search_statement:
-            select_query = select_query + f"WHERE {search_statement} =" + "%s"
-        if order_by:
-            select_query = select_query + f"ORDER BY {order_by} {how_order}"
-        results = ""
-        try:
-            if search_value:
-                cur.execute(select_query, search_value)
-            else:
-                cur.execute(select_query)
-            results = cur.fetchall()
-        except Exception as e:
-            print(f"Exception: {e} \nTraceback:\n{traceback.format_exc()} \n ")
-            results = "something is wrong"
-        finally:
-            cur.close()
-            conn.close()
-            return results
+    
 
         
         
