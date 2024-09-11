@@ -25,7 +25,7 @@ class conectorDatabase():
             for atribute in table_with_atributes[1]:
                 select_query = select_query + f", {atribute}"
         select_query = select_query + f"FROM {tables[0]}"
-        if tables > 1:
+        if len(tables) > 1:
             x = 1
             for pk, fk in key_couples:
                 select_query = select_query + f"LEFT JOIN {tables[0]} on {tables[x]}.{pk} = {tables[0]}.{fk} \n"
@@ -150,4 +150,11 @@ class databaseModel(conectorDatabase):
             cur.close()
             conn.close()
     
-   
+    
+
+        
+        
+
+
+        
+ 
