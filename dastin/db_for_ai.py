@@ -150,11 +150,4 @@ class databaseModel(conectorDatabase):
             cur.close()
             conn.close()
     
-    
-
-        
-        
-
-
-        
- 
+   
