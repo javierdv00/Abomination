@@ -1,6 +1,6 @@
 from openai import OpenAI
 import json
-from db_for_ai.py import conectorDatabase
+from db_for_ai import conectorDatabase
 import requests
 from PIL import Image
 from io import BytesIO
@@ -8,17 +8,14 @@ import os
 
 with open('setings.json','r') as file:
     data = json.load(file)
-print(data["API-Key"])
 
 class Oaica2(conectorDatabase):
     def __init__(self, image_name="image") -> None:
         super().__init__()
-        curs, conn = self.conect_to_database("userki33")
+        curs, conn = self.conect_to_database("userki43")
         query = "SELECT prompt FROM KI_Role;"
         curs.execute(query)
         self.system_prompt = [prompt[0] for prompt in curs.fetchall()]
-        for prompt in self.system_prompt:
-            print(f"Prompt:{prompt}")
         """
         # Jornalist for wrting text about Football
         self.system_prompt.append("You are an AI assistant specializing in writing articles about football. You create informative, engaging, and well-researched texts about teams, players, coaches, tactics, and current events in football. Make sure to write clearly, precisely, and in an entertaining manner.")
@@ -32,6 +29,18 @@ class Oaica2(conectorDatabase):
         self.image_name = image_name
 
     # decision_maker for right role       
+
+    def get_chating(self, message):
+        client = OpenAI(api_key=data["API-Key"]) 
+        response = client.chat.completions.create(
+        model="gpt-4o",  # set model here
+        messages=message,  
+        # The ongoing conversation[{'role':'system','content':'You are a helpful assistant.'},{'role':'user','content':''Hey whats upppp'}]
+        temperature=1.0,
+        max_tokens=4000,)
+        #print(response)
+        return response.choices[0].message.content    
+
     def get_text_response(self, message, decision_maker=None) -> str:
         global data
 
@@ -44,8 +53,10 @@ class Oaica2(conectorDatabase):
         client = OpenAI(api_key=data["API-Key"]) 
         response = client.chat.completions.create(
         model="gpt-4o",  # set model here
-        messages=messages,   
-        # The ongoing conversation[{'role':'system','content':'You are a helpful assistant.'},{'role':'user','content':''Hey whats upppp'}]
+        messages=messages, 
+        response_format={ "type": "json_object" },  
+        # The ongoing conversation[{'role':'system','content':'You 
+        #  a helpful assistant.'},{'role':'user','content':''Hey whats upppp'}]
         temperature=1.0,
         max_tokens=4000,)
         #print(response)
