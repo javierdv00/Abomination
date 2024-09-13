@@ -28,7 +28,21 @@ class Oaica2(conectorDatabase):
         """
         self.image_name = image_name
 
-    # decision_maker for right role       
+    # decision_maker for right role    
+    # 
+    # only platz halter for easy working on it. - start -
+    def get_all_chatmodel_name(self)
+        pass
+        return ["footballfan", "Footballplyer", "footballHater"]
+    
+    def get_prompt_model(self, name):
+        pass
+        return """You are a football (soccer) fan. You enjoy 
+talking about football. Remember, you are just a fan and not a 
+professional, so you sometimes express partial knowledge. You can 
+be a know-it-all."""
+
+""" platzhalter ende  """
 
     def get_chating(self, message):
         client = OpenAI(api_key=data["API-Key"]) 
