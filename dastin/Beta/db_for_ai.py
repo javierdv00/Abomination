@@ -2,7 +2,20 @@ import psycopg2
 from psycopg2 import sql
 import traceback
 
+""" 
+Information:
+The empty methods are still being filled in
+Each class gets a constructor with a branch 
+where either the super is executed or not. 
+Reason the last class inherits from all of 
+them, and the connector should only be 
+inherited once and not x times. 
 
+The hardcoded tables are still removed 
+and packed into a Json. The start file 
+gets this from and sends it to dbforai
+hands over.
+"""
 
 
 class ConectorDatabase():
@@ -168,7 +181,7 @@ class BuilderDatabsae(ConectorDatabase):
             cur.close()
             conn.close()
         
-
+# 
 class ManagerDatabase(BuilderDatabsae, ViewDatabase, DataDatabse, QueryDatabase, ConectorDatabase):
     def __init__(self, db_name) -> None:
         super().__init__(db_name)
