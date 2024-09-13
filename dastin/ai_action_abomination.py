@@ -37,6 +37,7 @@ class Oaica2(conectorDatabase):
     
     def get_prompt_model(self, name):
         pass
+        print (name)
         return """You are a football (soccer) fan. You enjoy 
 talking about football. Remember, you are just a fan and not a 
 professional, so you sometimes express partial knowledge. You can 
