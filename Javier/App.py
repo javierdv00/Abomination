@@ -5,7 +5,7 @@ import multiprocessing
 import secondary_file  # Import your secondary file that contains the function to run
 from gpt import get_chatgpt_response
 
-run_secondary_file_varible = False
+run_secondary_file_varible = True # Ture to scrap infomation from internet / False to run a test without the scraping
 machine_role = {
     "Football Player": """
     You are a football (soccer) player. 
