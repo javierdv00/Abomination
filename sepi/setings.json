@@ -1,0 +1,15 @@
+{
+    "API-Key": "sk-GJprGmNwoHjVqj3B3TvKUH64KXtIW1klp96wyFGKEZT3BlbkFJshg5G1-txVzSW_AaJwNVG9MGbKagB41IbsiQA8NB8A",
+     "promtJornal": "",
+    "promtFootballPlayer": "",
+    "promtFootballFan": "",
+    "promtFootballHater": "",
+    "names": ["Jornal", "FootballPlaye4r", "FootballFan", "Fooballhater"],
+    "databaseModel": "AIDB",
+    "base_database": "",
+    "user_name_in_postgres": "",
+    "pw_in_postgres": "",
+    "host": "",
+    "port": "",
+    "table_list": []
+  }
