@@ -78,6 +78,17 @@ class Oaica2(conectorDatabase):
                 image_list.append(image_path)
         return image_list
 
+
+def animate_message(message_label, start_opacity=0.0):
+    if start_opacity <= 1.0:
+        new_color = f"#{int(255*start_opacity):02x}{int(255*start_opacity):02x}{int(255*start_opacity):02x}"
+        message_label.configure(fg_color=new_color)
+        start_opacity += 0.01
+        message_label.after(50, lambda: animate_message(message_label, start_opacity))
+
+
+
+
 # GUI for the AI Chat and Image Generation
 class AIAppGUI:
     def __init__(self, root):

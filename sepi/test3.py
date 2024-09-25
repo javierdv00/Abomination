@@ -1,18 +1,17 @@
+import datetime
 import customtkinter as ctk
 import json
 import requests
 from PIL import Image, ImageTk
 from io import BytesIO
-from db_for_ai import *
+from db_for_ai import conectorDatabase
 from openai import OpenAI
 import os
-import datetime
 
 # Load settings
 with open('/home/dci-student/Abomination/sepi/setings.json', 'r') as file:
     data = json.load(file)
 
-# Class from your code that connects to DB and interacts with OpenAI API
 class Oaica2(conectorDatabase):
     def __init__(self, image_name="image") -> None:
         super().__init__()
@@ -24,10 +23,8 @@ class Oaica2(conectorDatabase):
 
     def get_text_response(self, message, decision_maker=None) -> str:
         global data
-        messages = []
-        messages.append({"role": "system", "content": self.system_prompt[decision_maker]})
-        messages.append({"role": "user", "content": message})
-        print(data["API-Key"])
+        messages = [{"role": "system", "content": self.system_prompt[decision_maker]},
+                    {"role": "user", "content": message}]
         client = OpenAI(api_key=data["API-Key"])
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -79,57 +76,61 @@ class Oaica2(conectorDatabase):
                 image_list.append(image_path)
         return image_list
 
-# GUI for the AI Chat and Image Generation
 class AIAppGUI:
+
     def __init__(self, root):
-        self.database = databaseModel("userki910") # als database object
         self.root = root
-        self.root.title("AI Chat & Image Generator")
+        self.root.title("ChatterMine")
         self.root.geometry("800x600")
-        self.database.insert_to_Database("USERKI_RoleChat", ["ID_user", "ID_Ki_role"], [2, 1]) # for a new Chat
+
+    # Load and set background image
+        self.background_image = Image.open("sepi/blue2.jpg") 
+        self.background_image = self.background_image.resize((1920, 1080), Image.LANCZOS)  # Resize to fit
+        self.bg_image_tk = ImageTk.PhotoImage(self.background_image)
+
+    # Create a label to display the background image
+        self.bg_label = ctk.CTkLabel(self.root, image=self.bg_image_tk)
+        self.bg_label.place(relwidth=1, relheight=1)
+
         self.ai_handler = Oaica2()
-        self.role_model = 1
-        
-        # Input frame
-        self.input_frame = ctk.CTkFrame(self.root)
-        self.input_frame.pack(pady=20, padx=20, fill="x")
 
-        # User input
-        self.prompt_label = ctk.CTkLabel(self.input_frame, text="Enter your message or description:")
-        self.prompt_label.pack(anchor="w")
+    # Rest of your initialization code...
 
-        self.user_input = ctk.CTkEntry(self.input_frame, width=500)
-        self.user_input.pack(pady=10)
-
-        # Dropdown for role selection
-        self.role_label = ctk.CTkLabel(self.input_frame, text="Select Role:")
-        self.role_label.pack(anchor="w")
-
-        self.role_selector = ctk.CTkComboBox(self.input_frame, values=["Football Player", "Fan", "Hater"]) 
-        self.role_selector.pack(pady=10)
-
-        # Text Generation Button
-        self.text_button = ctk.CTkButton(self.input_frame, text="Generate Text", command=  lambda: self.generate_text(0)) # for the new way
-        self.text_button.pack(pady=10)
-
-        #only for the subquery
-        self.text_button2 = ctk.CTkButton(self.input_frame, text="Generate Text-oldway", command= lambda: self.generate_text(1)) # for oldway
-        self.text_button2.pack(pady=10)
-
-        # Image Generation Button
-        self.image_button = ctk.CTkButton(self.input_frame, text="Generate Image", command= self.generate_image)
-        self.image_button.pack(pady=10)
 
         # Result Display
-        self.result_frame = ctk.CTkFrame(self.root)
-        self.result_frame.pack(pady=20, padx=20, fill="both", expand=True)
+        self.result_frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        self.result_frame.pack(pady=10, padx=20, fill="both", expand=True)
+        
+        # Input frame
+        self.input_frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        self.input_frame.pack(pady=2, padx=20, fill="both", expand=True)
 
-        self.result_text = ctk.CTkTextbox(self.result_frame, width=750, height=200)
-        self.result_text.pack(pady=10)
+        self.role_label = ctk.CTkLabel(self.input_frame, text="Select Role:")
+        self.role_label.pack(pady=2)
 
-        # Image Display
-        self.image_label = ctk.CTkLabel(self.result_frame, text="")
-        self.image_label.pack(pady=10)
+        self.role_selector = ctk.CTkComboBox(self.input_frame, values=["Journalist", "Football Player", "Fan", "Hater"])
+        self.role_selector.pack(pady=10,padx=10)
+
+        self.prompt_label = ctk.CTkLabel(self.input_frame, text="Enter your message or description:", font=("helvetica", 18))
+        self.prompt_label.pack(pady=1, padx=10,)
+
+        self.user_input = ctk.CTkEntry(self.input_frame, width=500)
+        self.user_input.pack(pady=1, padx=10)
+
+        self.text_button = ctk.CTkButton(self.input_frame, text="Send Message", command=self.generate_text, font=("helvetica", 15), fg_color="#527BF4", text_color="black",corner_radius=12)
+        self.text_button.pack(pady=10)
+
+        self.image_button = ctk.CTkButton(self.input_frame, text="Generate Image", command=self.generate_image, font=("helvetica", 15), fg_color="#527BF4", text_color="black",corner_radius=12)
+        self.image_button.pack(pady=10)
+
+        
+
+        self.message_canvas = ctk.CTkScrollableFrame(self.result_frame)
+        self.message_canvas.pack(fill="both", expand=True)
+
+        
+
+        
 
     def generate_text(self, value_way):
         user_message = self.user_input.get()
@@ -170,25 +171,48 @@ class AIAppGUI:
             
         print(data)
         self.result_text.insert("1.0", chat_history)
-
-
-
-    def generate_image(self):                                                        
+    def generate_image(self):
         description = self.user_input.get()
+        
+        # Display user message for the image request
+        self.display_bubble_message(description, is_user=True)
+
         images = self.ai_handler.get_image_response(description, how_many_image=1)
 
         if images:
             image = Image.open(images[0])
             img_resized = image.resize((400, 300), Image.ANTIALIAS)
             img_tk = ImageTk.PhotoImage(img_resized)
-    
-            self.image_label.configure(image=img_tk)
-            self.image_label.image = img_tk
+
+            image_label = ctk.CTkLabel(self.message_canvas, image=img_tk)
+            image_label.image = img_tk
+            image_label.pack(pady=10)
+
+            # Display AI response image
+            self.display_bubble_message("Here is your generated image:", is_user=False)
+
+    def display_bubble_message(self, message, is_user):
+        bubble_frame = ctk.CTkFrame(self.message_canvas)
+        bubble_frame.pack(pady=5, padx=10, fill="x")
+
+        if is_user:
+            message_label = ctk.CTkLabel(bubble_frame, text=message, wraplength=400, justify="right", fg_color="#527BF4", font=("Arial", 12, "bold"), text_color="#527BF4", corner_radius=15,bg_color="darkblue")
+            message_label.pack(pady=5, padx=10)
+        else:
+            message_label = ctk.CTkLabel(bubble_frame, text=message, wraplength=400, justify="left", fg_color="lightgrey", font=("Arial", 18, "bold"), text_color="black", corner_radius=15)
+            message_label.pack(pady=5, padx=10)
+
+        self.animate_message(message_label)
+
+    def animate_message(self, frame, start_opacity=0.0):
+        """Fade-in animation for new message bubbles."""
+        if start_opacity <= 1.0:
+            frame.configure(fg_color=f"#{int(255*start_opacity):02x}{int(255*start_opacity):02x}{int(255*start_opacity):02x}")
+            start_opacity += 0.05
+            frame.after(50, lambda: self.animate_message(frame, start_opacity))
 
 # Initialize CustomTkinter App
 if __name__ == "__main__":
-    print("hallo")
-
     ctk.set_appearance_mode("dark")
     root = ctk.CTk()
     app = AIAppGUI(root)
