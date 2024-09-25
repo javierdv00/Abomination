@@ -1,0 +1,16 @@
+{
+    "API-Key": "here AI QUERY",
+     "promtJornal": "",
+    "promtFootballPlayer": "",
+    "promtFootballFan": "",
+    "promtFootballHater": "",
+    "names": ["Jornal", "FootballPlaye4r", "FootballFan", "Fooballhater"],
+    "databaseModel": "AIDB",
+    "base_database": "",
+    "user_name_in_postgres": "",
+    "pw_in_postgres": "",
+    "host": "",
+    "port": "",
+    "table_list": []
+  }
+
