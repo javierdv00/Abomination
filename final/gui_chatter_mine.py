@@ -56,6 +56,9 @@ class AIAppGUI:
         self.message_canvas = ctk.CTkScrollableFrame(self.result_frame)
         self.message_canvas.pack(fill="both", expand=True)
 
+        self.image_label = ctk.CTkLabel(root)
+        self.image_label.pack(pady=200)
+
     def generate_text(self, value_way):
         user_message = self.user_input.get() # F
         selected_role = self.role_selector.get() #f
@@ -107,9 +110,8 @@ class AIAppGUI:
 
         if images:
             image = Image.open(images[0])
-            img_resized = image.resize((400, 300), Image.ANTIALIAS)
+            img_resized = image.resize((1400, 800), Image.LANCZOS)
             img_tk = ImageTk.PhotoImage(img_resized)
-
             self.image_label.configure(image=img_tk)
             self.image_label.image = img_tk
 
